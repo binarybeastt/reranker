@@ -1,0 +1,54 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "csv",
+  "dataset_size": 4170056,
+  "description": "",
+  "download_checksums": {
+    "C:/Users/Admin/OneDrive/Documents/coudez/devin/RAG2/dataset.csv": {
+      "num_bytes": 4168782,
+      "checksum": null
+    }
+  },
+  "download_size": 4168782,
+  "features": {
+    "text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "url": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "title": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "keyword": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 8338838,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 4170056,
+      "num_examples": 429,
+      "dataset_name": "csv"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}
