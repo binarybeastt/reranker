@@ -13,11 +13,11 @@ bm25 = BM25Encoder()
 bm25.fit(df['text_chunk'])
 
 # Initialize Pinecone
-pc = Pinecone(api_key="3661dc2a-3710-4669-a187-51faaa0cc557")
+pc = Pinecone(api_key=st.secrets['pinecone_api_key'])
 index = pc.Index("hybridsearch")
 
 import cohere
-co = cohere.Client('HW8yZAl7aYmOzWKd3LVWi87bXrwomxKec1cLBL3k')
+co = cohere.Client(st.secrets['cohere_api_key'])
 
 # Define OpenAI client
 client = None  # Initialize to None until user provides API key
