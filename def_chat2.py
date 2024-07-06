@@ -102,7 +102,7 @@ def main():
             docs_reranked = [query_result['matches'][result.index] for result in rerank_docs.results]
             results = []
             displayed_urls = set()
-            for match in docs_reranked['matches']:
+            for match in docs_reranked:
                 url = match.get('metadata', {}).get('url', 'N/A')
                 if url in displayed_urls:
                     continue
