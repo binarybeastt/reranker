@@ -102,7 +102,7 @@ def main():
             rerank_docs = co.rerank(query=search_intent, documents=docs, top_n=10, model="rerank-english-v2.0")
             for i, doc in enumerate(rerank_docs):
                 rerank_i = doc.index
-                reranked_docs.append(f"[{rerank_i}] {doc.document['text']}")
+                reranked_docs.append(f"[{rerank_i}] {doc.text}")
             results = []
             for text in reranked_docs:
                 id = int(text.split(']')[0].strip('['))  # Extract the index and convert to zero-based index
