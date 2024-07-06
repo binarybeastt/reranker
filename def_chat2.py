@@ -98,19 +98,18 @@ def main():
                 results_1.append({"Text": text, "URL": url})
             
             docs = [x["metadata"]['text'] for x in query_result['matches']]
-            reranked_docs = []
             rerank_docs = co.rerank(query=search_intent, documents=docs, top_n=10, model="rerank-english-v2.0")
-            for i, doc in enumerate(rerank_docs):
-                rerank_i = doc.index
-                reranked_docs.append(f"[{rerank_i}] {doc.text}")
+            docs_reranked = [query_result['matches'][result.index] for result in rerank_docs.results]
             results = []
-            for text in reranked_docs:
-                id = int(text.split(']')[0].strip('['))  # Extract the index and convert to zero-based index
-                original_data = query_result["matches"][id]  # Get the original data using the index
-                results.append({
-                    "text": text.split(']')[1].strip(),  # Extract the reranked text
-                    "id": original_data["metadata"]["id"]  # Get the URL from the original data
-                })
+            displayed_urls = set()
+            for match in docs_reranked['matches']:
+                url = match.get('metadata', {}).get('url', 'N/A')
+                if url in displayed_urls:
+                    continue
+                displayed_urls.add(url)
+                score = match.get('score', 'N/A')
+                text = match.get('metadata', {}).get('text', '')
+                results.append({"Text": text, "URL": url})
             # if query_result and 'matches' in query_result:
             #     results = []
             #     displayed_urls = set()
