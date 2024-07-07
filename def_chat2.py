@@ -13,11 +13,11 @@ bm25 = BM25Encoder()
 bm25.fit(df['text_chunk'])
 
 # Initialize Pinecone
-pc = Pinecone(api_key="3661dc2a-3710-4669-a187-51faaa0cc557")
+pc = Pinecone(api_key=st.secrets["pinecone_api_key"])
 index = pc.Index("hybridsearch")
 
 import cohere
-co = cohere.Client('Kw8WhHLNibvjOIUF3B4L56F5124PpD6kBDsvqZJx')
+co = cohere.Client(st.secrets["cohere_api_key"])
 
 # Define OpenAI client
 client = None  # Initialize to None until user provides API key
@@ -34,15 +34,7 @@ def hybrid_scale(dense, sparse, alpha: float):
     hdense = [v * alpha for v in dense]
     return hdense, hsparse
 
-def find_keyword_snippets(text, keyword, snippet_length=50):
-    """
-    Finds snippets of text around each occurrence of the keyword or its individual words.
-    
-    :param text: The text to search through.
-    :param keyword: The keyword to search for, which can contain multiple words.
-    :param snippet_length: The number of characters to include before and after the keyword.
-    :return: A list of snippets containing the keyword or its individual words.
-    """
+def find_keyword_snippets(text, keyword, snippet_length=200):
     import re
     snippets = []
     
@@ -67,17 +59,9 @@ def find_keyword_snippets(text, keyword, snippet_length=50):
                 
             snippets.append(highlighted_snippet)
     
-    return snippets
+    return " ".join(snippets)
 
 def process_results(results, keyword, snippet_length=50):
-    """
-    Processes a list of results to find snippets containing the keyword or its individual words.
-    
-    :param results: A list of dictionaries with 'Text' and 'URL' keys.
-    :param keyword: The keyword to search for, which can contain multiple words.
-    :param snippet_length: The number of characters to include before and after the keyword.
-    :return: A list of results with snippets added.
-    """
     processed_results = []
     
     for result in results:
@@ -87,20 +71,6 @@ def process_results(results, keyword, snippet_length=50):
         processed_results.append(processed_result)
     
     return processed_results
-
-# # Example usage
-# results = [
-#     {"Text": "This is a sample text where the sales team appears multiple times. The sales team should be highlighted in snippets. Here's another sales occurrence.", "URL": "http://example.com/1"},
-#     {"Text": "Another text with the sales team mentioned here.", "URL": "http://example.com/2"}
-# ]
-# keyword = "sales team"
-# processed_results = process_results(results, keyword)
-
-# for result in processed_results:
-#     print(f"URL: {result['URL']}")
-#     for i, snippet in enumerate(result["Snippets"], 1):
-#         print(f"Snippet {i}: {snippet}")
-
 
 def main():
     st.title("Pinecone Search Application")
