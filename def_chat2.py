@@ -140,6 +140,6 @@ def main():
             st.text('Unranked Results')
             st.table(pd.DataFrame(results_1))
             st.text('Reranked Results')
-            st.table(pd.DataFrame(results))
+            st.table(pd.DataFrame(processed_results))
 if __name__ == "__main__":
     main()
