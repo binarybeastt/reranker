@@ -34,33 +34,46 @@ def hybrid_scale(dense, sparse, alpha: float):
     hdense = [v * alpha for v in dense]
     return hdense, hsparse
 
-def refine_results(search_intent, text):
-    prompt = (
-        "You are a very helpful assistant, helping link builders find the most relevant blogs based on their question. "
-        "A returned result for a keyword search would be given to you. Refine this text and only return the results that fit the search intent. "
-        "The search intent is a detailed description of what the user is looking for. Only return the results that closely fits the key aspects of the search intent the returned result should be a summary of the result. "
-        "For example, if the search intent is about the impacts of artificial intelligence, only return results that closely discuss those impacts"
-    )
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": f"content: {text}\n\nsearch intent: {search_intent}"}
-        ],
-        temperature=0)
-    result= response.choices[0].message.content
-    refined_results = []
-    for line in result.split("\n"):
-        if "does not fit the search intent" not in line and  "does not match" not in line:
-            refined_results.append(line)
+def find_keyword_snippets(text, keyword, snippet_length=30):
+    snippets = []
     
-    return "\n".join(refined_results)
+    # Create a list of search patterns: the entire keyword and individual words
+    search_patterns = [keyword] + keyword.split()
+    
+    # Find all occurrences of the search patterns in the text
+    for pattern in search_patterns:
+        for match in re.finditer(re.escape(pattern), text, re.IGNORECASE):
+            start = max(match.start() - snippet_length, 0)
+            end = min(match.end() + snippet_length, len(text))
+            snippet = text[start:end]
+            snippets.append(snippet)
+    
+    return snippets
 
+def process_results(results, keyword, snippet_length=30):
+    processed_results = []
+    
+    for result in results:
+        text = result["Text"]
+        snippets = find_keyword_snippets(text, keyword, snippet_length)
+        processed_result = {"URL": result["URL"], "Snippets": snippets}
+        processed_results.append(processed_result)
+    
+    return processed_results
 
+# # Example usage
+# results = [
+#     {"Text": "This is a sample text where the sales team appears multiple times. The sales team should be highlighted in snippets. Here's another sales occurrence.", "URL": "http://example.com/1"},
+#     {"Text": "Another text with the sales team mentioned here.", "URL": "http://example.com/2"}
+# ]
+# keyword = "sales team"
+# processed_results = process_results(results, keyword)
 
-def is_relevant(summary, search_intent):
-    # Check if the summary contains keywords from the search intent
-    return any(keyword.lower() in summary.lower() for keyword in search_intent.split())
+# for result in processed_results:
+#     print(f"URL: {result['URL']}")
+#     for i, snippet in enumerate(result["Snippets"], 1):
+#         print(f"Snippet {i}: {snippet}")
+
 
 def main():
     st.title("Pinecone Search Application")
@@ -110,6 +123,7 @@ def main():
                 score = match.get('score', 'N/A')
                 text = match.get('metadata', {}).get('text', '')
                 results.append({"Text": text, "URL": url})
+            processed_results = process_results(results, keyword=search_text)
             # if query_result and 'matches' in query_result:
             #     results = []
             #     displayed_urls = set()
