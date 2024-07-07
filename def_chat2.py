@@ -34,7 +34,16 @@ def hybrid_scale(dense, sparse, alpha: float):
     hdense = [v * alpha for v in dense]
     return hdense, hsparse
 
-def find_keyword_snippets(text, keyword, snippet_length=30):
+def find_keyword_snippets(text, keyword, snippet_length=50):
+    """
+    Finds snippets of text around each occurrence of the keyword or its individual words.
+    
+    :param text: The text to search through.
+    :param keyword: The keyword to search for, which can contain multiple words.
+    :param snippet_length: The number of characters to include before and after the keyword.
+    :return: A list of snippets containing the keyword or its individual words.
+    """
+    import re
     snippets = []
     
     # Create a list of search patterns: the entire keyword and individual words
@@ -46,11 +55,29 @@ def find_keyword_snippets(text, keyword, snippet_length=30):
             start = max(match.start() - snippet_length, 0)
             end = min(match.end() + snippet_length, len(text))
             snippet = text[start:end]
-            snippets.append(snippet)
+            
+            # Highlight the keyword
+            highlighted_snippet = re.sub(re.escape(pattern), f"**{pattern}**", snippet, flags=re.IGNORECASE)
+            
+            # Add ellipses if the snippet is not at the start or end of the text
+            if start > 0:
+                highlighted_snippet = "..." + highlighted_snippet
+            if end < len(text):
+                highlighted_snippet = highlighted_snippet + "..."
+                
+            snippets.append(highlighted_snippet)
     
     return snippets
 
-def process_results(results, keyword, snippet_length=30):
+def process_results(results, keyword, snippet_length=50):
+    """
+    Processes a list of results to find snippets containing the keyword or its individual words.
+    
+    :param results: A list of dictionaries with 'Text' and 'URL' keys.
+    :param keyword: The keyword to search for, which can contain multiple words.
+    :param snippet_length: The number of characters to include before and after the keyword.
+    :return: A list of results with snippets added.
+    """
     processed_results = []
     
     for result in results:
@@ -109,7 +136,7 @@ def main():
                 score = match.get('score', 'N/A')
                 text = match.get('metadata', {}).get('text', '')
                 results_1.append({"Text": text, "URL": url})
-            
+            processed_results_1 = process_results(results_1, keyword=search_text)
             docs = [x["metadata"]['text'] for x in query_result['matches']]
             rerank_docs = co.rerank(query=search_intent, documents=docs, top_n=10, model="rerank-english-v2.0")
             docs_reranked = [query_result['matches'][result.index] for result in rerank_docs.results]
@@ -138,7 +165,7 @@ def main():
             #         if is_relevant(summary, search_intent):
             #             results.append({"Score": score, "AI Summary": summary, "URL": url})
             st.text('Unranked Results')
-            st.table(pd.DataFrame(results_1))
+            st.table(pd.DataFrame(processed_results_1))
             st.text('Reranked Results')
             st.table(pd.DataFrame(processed_results))
 if __name__ == "__main__":
