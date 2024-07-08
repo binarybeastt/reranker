@@ -35,21 +35,20 @@ def hybrid_scale(dense, sparse, alpha: float):
     return hdense, hsparse
 
 def find_keyword_snippets(text, keyword, snippet_length=200):
-    import re
     snippets = []
     
-    # Create a list of search patterns: the entire keyword and individual words
-    search_patterns = [keyword] + keyword.split()
+    # Create a list of search patterns: the entire keyword and individual words, all with word boundaries
+    search_patterns = [r'\b' + re.escape(keyword) + r'\b'] + [r'\b' + re.escape(word) + r'\b' for word in keyword.split()]
     
     # Find all occurrences of the search patterns in the text
     for pattern in search_patterns:
-        for match in re.finditer(re.escape(pattern), text, re.IGNORECASE):
+        for match in re.finditer(pattern, text, re.IGNORECASE):
             start = max(match.start() - snippet_length, 0)
             end = min(match.end() + snippet_length, len(text))
             snippet = text[start:end]
             
             # Highlight the keyword
-            highlighted_snippet = re.sub(re.escape(pattern), f"**{pattern}**", snippet, flags=re.IGNORECASE)
+            highlighted_snippet = re.sub(pattern, f"**{match.group(0)}**", snippet, flags=re.IGNORECASE)
             
             # Add ellipses if the snippet is not at the start or end of the text
             if start > 0:
