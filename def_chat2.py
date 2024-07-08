@@ -1,7 +1,6 @@
 import streamlit as st
 from pinecone import Pinecone
 import re
-import urllib.parse
 import pandas as pd
 from openai import OpenAI
 from pinecone_text.sparse import BM25Encoder
@@ -35,31 +34,43 @@ def hybrid_scale(dense, sparse, alpha: float):
     hdense = [v * alpha for v in dense]
     return hdense, hsparse
 
-def highlight_text(text, search_key):
-    """Highlight the search key in the given text."""
-    highlighted = text.replace(search_key, f"<mark>{search_key}</mark>")
-    return highlighted
-
-def extract_snippets(text, search_key, snippet_length=50):
-    """Extract snippets around each occurrence of the search key in the text."""
+def find_keyword_snippets(text, keyword, snippet_length=200):
+    import re
     snippets = []
-    start = 0
-    while True:
-        start = text.find(search_key, start)
-        if start == -1:
-            break
-        snippet_start = max(start - snippet_length // 2, 0)
-        snippet_end = min(start + len(search_key) + snippet_length // 2, len(text))
-        snippet = text[snippet_start:snippet_end]
-        snippets.append(snippet)
-        start += len(search_key)
-    return snippets
+    
+    # Create a list of search patterns: the entire keyword and individual words
+    search_patterns = [keyword] + keyword.split()
+    
+    # Find all occurrences of the search patterns in the text
+    for pattern in search_patterns:
+        for match in re.finditer(re.escape(pattern), text, re.IGNORECASE):
+            start = max(match.start() - snippet_length, 0)
+            end = min(match.end() + snippet_length, len(text))
+            snippet = text[start:end]
+            
+            # Highlight the keyword
+            highlighted_snippet = re.sub(re.escape(pattern), f"**{pattern}**", snippet, flags=re.IGNORECASE)
+            
+            # Add ellipses if the snippet is not at the start or end of the text
+            if start > 0:
+                highlighted_snippet = "..." + highlighted_snippet
+            if end < len(text):
+                highlighted_snippet = highlighted_snippet + "..."
+                
+            snippets.append(highlighted_snippet)
+    
+    return " ".join(snippets)
 
-def extract_title_from_url(url):
-    path = urllib.parse.urlparse(url).path
-    title = path.split('/')[-1]
-    title = title.replace('-', ' ').title()
-    return title
+def process_results(results, keyword, snippet_length=50):
+    processed_results = []
+    
+    for result in results:
+        text = result["Text"]
+        snippets = find_keyword_snippets(text, keyword, snippet_length)
+        processed_result = {"URL": result["URL"], "Snippets": snippets}
+        processed_results.append(processed_result)
+    
+    return processed_results
 
 def main():
     st.title("Pinecone Search Application")
@@ -74,7 +85,7 @@ def main():
 
     if st.button("Search"):
         if search_text:          
-            dense = get_embedding(search_intent)
+            dense = get_embedding(search_text)
             sparse = bm25.encode_queries(search_text)
             hdense, hsparse = hybrid_scale(dense, sparse, alpha=0)
 
@@ -95,14 +106,7 @@ def main():
                 score = match.get('score', 'N/A')
                 text = match.get('metadata', {}).get('text', '')
                 results_1.append({"Text": text, "URL": url})
-            for result_1 in results_1:
-                url = result_1["URL"]
-                text = result_1["Text"]
-                title = extract_title_from_url(url)
-                snippets = extract_snippets(text, search_text)
-                highlighted_snippets = [highlight_text(snippet, search_text) for snippet in snippets]
-                result_1["Title"] = title
-                result_1["Highlighted_Snippets"] = highlighted_snippets
+            processed_results_1 = process_results(results_1, keyword=search_text)
             docs = [x["metadata"]['text'] for x in query_result['matches']]
             rerank_docs = co.rerank(query=search_intent, documents=docs, top_n=10, model="rerank-english-v2.0")
             docs_reranked = [query_result['matches'][result.index] for result in rerank_docs.results]
@@ -116,14 +120,7 @@ def main():
                 score = match.get('score', 'N/A')
                 text = match.get('metadata', {}).get('text', '')
                 results.append({"Text": text, "URL": url})
-            for result in results:
-                url = result["URL"]
-                text = result["Text"]
-                title = extract_title_from_url(url)
-                snippets = extract_snippets(text, search_text)
-                highlighted_snippets = [highlight_text(snippet, search_text) for snippet in snippets]
-                result["Title"] = title
-                result["Highlighted_Snippets"] = highlighted_snippets
+            processed_results = process_results(results, keyword=search_text)
             # if query_result and 'matches' in query_result:
             #     results = []
             #     displayed_urls = set()
@@ -138,8 +135,8 @@ def main():
             #         if is_relevant(summary, search_intent):
             #             results.append({"Score": score, "AI Summary": summary, "URL": url})
             st.text('Unranked Results')
-            st.table(pd.DataFrame(results_1))
+            st.table(pd.DataFrame(processed_results_1))
             st.text('Reranked Results')
-            st.table(pd.DataFrame(results))
+            st.table(pd.DataFrame(processed_results))
 if __name__ == "__main__":
     main()
