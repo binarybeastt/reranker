@@ -85,7 +85,7 @@ def main():
 
     if st.button("Search"):
         if search_text:          
-            dense = get_embedding(search_text)
+            dense = get_embedding(search_intent)
             sparse = bm25.encode_queries(search_text)
             hdense, hsparse = hybrid_scale(dense, sparse, alpha=0)
 
