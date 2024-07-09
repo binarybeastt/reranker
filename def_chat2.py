@@ -73,7 +73,7 @@ def process_results(results, keyword, snippet_length=200):
     processed_results = []
     
     for result in results:
-        url = result['url']
+        url = result['URL']
         text = result["Text"]
         parts = url.rsplit('/', 1)  # Split on the last slash
         title = parts[-1] if len(parts) > 1 else url
@@ -119,7 +119,7 @@ def main():
                 parts = url.rsplit('/', 1)  # Split on the last slash
                 title = parts[-1] if len(parts) > 1 else url
                 text = match.get('metadata', {}).get('text', '')
-                results_1.append({"Text": match.get('metadata', {}).get('text', ''), "URL": url, "Title": title})
+                results_1.append({"Text": text, "URL": url})
             processed_results_1 = process_results(results_1, keyword=search_text)
             docs = [x["metadata"]['text'] for x in query_result['matches']]
             rerank_docs = co.rerank(query=search_intent, documents=docs, top_n=10, model="rerank-english-v2.0")
