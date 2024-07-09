@@ -61,15 +61,15 @@ def find_keyword_snippets(text, keyword, snippet_length=500):
             
             # Add ellipses if the snippet is not at the start or end of the text
             if start > 0:
-                highlighted_snippet = "..." + highlighted_snippet
+                highlighted_snippet = "\n..." + highlighted_snippet
             if end < len(text):
-                highlighted_snippet = highlighted_snippet + "..."
+                highlighted_snippet = highlighted_snippet + "...\n"
                 
             snippets.append(highlighted_snippet)
     
     return " ".join(snippets)
 
-def process_results(results, keyword, snippet_length=500):
+def process_results(results, keyword, snippet_length=200):
     processed_results = []
     
     for result in results:
