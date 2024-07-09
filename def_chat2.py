@@ -43,7 +43,7 @@ def remove_stopwords(text, language='english'):
     filtered_words = [word for word in words if word.lower() not in stop_words]
     return ' '.join(filtered_words)
 
-def find_keyword_snippets(text, keyword, snippet_length=20):
+def find_keyword_snippets(text, keyword, snippet_length=7):
     snippets = []
     words = text.split()
     
@@ -64,9 +64,9 @@ def find_keyword_snippets(text, keyword, snippet_length=20):
             # Highlight the keyword
             highlighted_snippet = re.sub(pattern, f"**{match.group(0)}**", snippet, flags=re.IGNORECASE)
             if snippet_start_idx > 0:
-                highlighted_snippet = "..." + highlighted_snippet
+                highlighted_snippet = "\n..." + highlighted_snippet
             if snippet_end_idx < len(words):
-                highlighted_snippet = highlighted_snippet + "..."
+                highlighted_snippet = highlighted_snippet + "...\n"
             
             # Only add unique snippets
             if highlighted_snippet not in found_snippets:
