@@ -102,7 +102,7 @@ def main():
     
     search_text = st.text_input("Enter search text:")
     search_text = remove_stopwords(search_text)
-    search_intent = st.text_input("Enter your search intent")
+    #search_intent = st.text_input("Enter your search intent")
     #top_k = st.number_input("Enter top_k:", min_value=1, value=5)
     
     openai_api_key = st.text_input("Enter OpenAI API Key:", type="password")
