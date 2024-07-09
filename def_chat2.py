@@ -76,7 +76,7 @@ def find_keyword_snippets(text, keyword, snippet_length=7):
     return "\n\n\n".join(snippets)
 
 
-def process_results(results, keyword, snippet_length=20):
+def process_results(results, keyword, snippet_length=7):
     processed_results = []
     
     for result in results:
