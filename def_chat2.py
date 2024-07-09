@@ -63,13 +63,13 @@ def find_keyword_snippets(text, keyword, snippet_length=500):
             if start > 0:
                 highlighted_snippet = "..." + highlighted_snippet
             if end < len(text):
-                highlighted_snippet = highlighted_snippet + "...\n"
+                highlighted_snippet = highlighted_snippet + "..."
                 
             snippets.append(highlighted_snippet)
     
     return " ".join(snippets)
 
-def process_results(results, keyword, snippet_length=50):
+def process_results(results, keyword, snippet_length=500):
     processed_results = []
     
     for result in results:
