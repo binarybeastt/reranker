@@ -1,12 +1,15 @@
 import streamlit as st
 from pinecone import Pinecone
 import re
+import nltk
+from nltk.corpus import stopwords
 import pandas as pd
 from openai import OpenAI
 from pinecone_text.sparse import BM25Encoder
 
 # Read the data
 df = pd.read_csv('preprocessed_data_cleaned.csv')
+nltk.download('stopwords')
 
 # Initialize BM25Encoder
 bm25 = BM25Encoder()
@@ -34,6 +37,12 @@ def hybrid_scale(dense, sparse, alpha: float):
     hdense = [v * alpha for v in dense]
     return hdense, hsparse
 
+def remove_stopwords(text, language='english'):
+    stop_words = set(stopwords.words(language))
+    words = text.split()
+    filtered_words = [word for word in words if word.lower() not in stop_words]
+    return ' '.join(filtered_words)
+
 def find_keyword_snippets(text, keyword, snippet_length=500):
     snippets = []
     
@@ -48,7 +57,7 @@ def find_keyword_snippets(text, keyword, snippet_length=500):
             snippet = text[start:end]
             
             # Highlight the keyword
-            highlighted_snippet = re.sub(pattern, f"<mark>{match.group(0)}</mark>", snippet, flags=re.IGNORECASE)
+            highlighted_snippet = re.sub(pattern, f"**{match.group(0)}**", snippet, flags=re.IGNORECASE)
             
             # Add ellipses if the snippet is not at the start or end of the text
             if start > 0:
@@ -75,6 +84,7 @@ def main():
     st.title("Pinecone Search Application")
     
     search_text = st.text_input("Enter search text:")
+    search_text = remove_stopwords(search_text)
     search_intent = st.text_input("Enter your search intent")
     #top_k = st.number_input("Enter top_k:", min_value=1, value=5)
     
