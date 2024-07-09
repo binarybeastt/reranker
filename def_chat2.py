@@ -73,9 +73,12 @@ def process_results(results, keyword, snippet_length=200):
     processed_results = []
     
     for result in results:
+        url = result['url']
         text = result["Text"]
+        parts = url.rsplit('/', 1)  # Split on the last slash
+        title = parts[-1] if len(parts) > 1 else url
         snippets = find_keyword_snippets(text, keyword, snippet_length)
-        processed_result = {"URL": result["URL"], "Snippets": snippets, 'Title': result['Title']}
+        processed_result = {"URL": result["URL"], "Snippets": snippets, "Title": title}
         processed_results.append(processed_result)
     
     return processed_results
