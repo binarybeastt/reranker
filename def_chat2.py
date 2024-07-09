@@ -75,7 +75,7 @@ def process_results(results, keyword, snippet_length=200):
     for result in results:
         text = result["Text"]
         snippets = find_keyword_snippets(text, keyword, snippet_length)
-        processed_result = {"URL": result["URL"], "Snippets": snippets}
+        processed_result = {"URL": result["URL"], "Snippets": snippets, 'Title': result['Title']}
         processed_results.append(processed_result)
     
     return processed_results
