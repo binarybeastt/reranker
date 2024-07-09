@@ -47,23 +47,14 @@ def find_keyword_snippets(text, keyword, snippet_length=20):
     snippets = []
     words = text.split()
     
-    # Create a list of search patterns: the entire keyword and individual words, all with word boundaries
     search_patterns = [r'\b' + re.escape(keyword) + r'\b'] + [r'\b' + re.escape(word) + r'\b' for word in keyword.split()]
-    
-    # To store already found snippets to avoid duplicates
     found_snippets = set()
-    
-    # Find all occurrences of the search patterns in the text
     for pattern in search_patterns:
         for match in re.finditer(pattern, text, re.IGNORECASE):
             start_idx = match.start()
             end_idx = match.end()
-            
-            # Find the start and end word indices
             start_word_idx = len(text[:start_idx].split())
             end_word_idx = len(text[:end_idx].split())
-            
-            # Determine the snippet range
             snippet_start_idx = max(start_word_idx - snippet_length, 0)
             snippet_end_idx = min(end_word_idx + snippet_length, len(words))
             
@@ -72,8 +63,6 @@ def find_keyword_snippets(text, keyword, snippet_length=20):
             
             # Highlight the keyword
             highlighted_snippet = re.sub(pattern, f"**{match.group(0)}**", snippet, flags=re.IGNORECASE)
-            
-            # Add ellipses if the snippet is not at the start or end of the text
             if snippet_start_idx > 0:
                 highlighted_snippet = "..." + highlighted_snippet
             if snippet_end_idx < len(words):
@@ -93,15 +82,11 @@ def process_results(results, keyword, snippet_length=20):
     for result in results:
         url = result['URL']
         text = result['Text']
-        
-        # Remove trailing slash if it exists
         if url.endswith('/'):
             url = url.rstrip('/')
         
         parts = url.rsplit('/', 1)  # Split on the last slash
         title = parts[-1] if len(parts) > 1 else url
-        
-        # If title is still empty, provide a default value
         if not title:
             title = "Untitled"
         
