@@ -82,16 +82,16 @@ def process_results(results, keyword, snippet_length=10):
     for result in results:
         url = result['URL']
         text = result['Text']
-        if url.endswith('/'):
-            url = url.rstrip('/')
+        # if url.endswith('/'):
+        #     url = url.rstrip('/')
         
-        parts = url.rsplit('/', 1)  # Split on the last slash
-        title = parts[-1] if len(parts) > 1 else url
-        if not title:
-            title = "Untitled"
+        # parts = url.rsplit('/', 1)  # Split on the last slash
+        # title = parts[-1] if len(parts) > 1 else url
+        # if not title:
+        #     title = "Untitled"
         
         snippets = find_keyword_snippets(text, keyword, snippet_length)
-        processed_result = {"URL": result["URL"], "Snippets": snippets, "Title": title}
+        processed_result = {"URL": result["URL"], "Snippets": snippets}
         processed_results.append(processed_result)
     
     return processed_results
@@ -130,8 +130,6 @@ def main():
                     continue
                 displayed_urls.add(url)
                 score = match.get('score', 'N/A')
-                parts = url.rsplit('/', 1)  # Split on the last slash
-                title = parts[-1] if len(parts) > 1 else url
                 text = match.get('metadata', {}).get('text', '')
                 results_1.append({"Text": text, "URL": url})
             processed_results_1 = process_results(results_1, keyword=search_text)
@@ -162,8 +160,8 @@ def main():
             #         summary = refine_results(text, search_intent)
             #         if is_relevant(summary, search_intent):
             #             results.append({"Score": score, "AI Summary": summary, "URL": url})
-            st.text('Unranked Results')
-            st.table(pd.DataFrame(processed_results_1))
+            # st.text('Unranked Results')
+            # st.table(pd.DataFrame(processed_results_1))
             st.text('Reranked Results')
             st.table(pd.DataFrame(processed_results))
 if __name__ == "__main__":
